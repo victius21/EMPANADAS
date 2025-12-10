@@ -1,6 +1,8 @@
 <?php
 // controllers/CocinaController.php
 
+require_once __DIR__ . '/../config/MongoLogger.php';
+
 class CocinaController {
     /** @var PDO */
     private $pdo;
@@ -52,6 +54,12 @@ class CocinaController {
         $estado = $_POST['estado'] ?? null;
 
         if ($id && $estado) {
+            // 1) Leer estado anterior
+            $stmt = $this->pdo->prepare("SELECT estado FROM pedidos WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            $estadoAnterior = $stmt->fetchColumn();
+
+            // 2) Actualizar al nuevo estado
             $stmt = $this->pdo->prepare("
                 UPDATE pedidos
                 SET estado = :estado
@@ -61,6 +69,10 @@ class CocinaController {
                 ':estado' => $estado,
                 ':id'     => $id,
             ]);
+
+            // 3) Log en Mongo del cambio de estado
+            $mongo = new MongoLogger();
+            $mongo->logCambioEstadoPedido((int)$id, $estadoAnterior ? (string)$estadoAnterior : null, (string)$estado);
         }
 
         header("Location: index.php?action=cocina");
