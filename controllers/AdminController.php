@@ -20,7 +20,7 @@ class AdminController {
             ->query("SELECT COUNT(*) FROM pedidos")
             ->fetchColumn();
 
-        // Total de ventas (suma de columna total)
+        // Total de ventas (suma de columna total en pedidos)
         $totalVentas = $this->pdo
             ->query("SELECT COALESCE(SUM(total), 0) FROM pedidos")
             ->fetchColumn();
@@ -31,12 +31,10 @@ class AdminController {
             'totalVentas'   => $totalVentas,
         ];
 
-        // Asegúrate de tener esta vista
         include __DIR__ . '/../views/admin_dashboard.php';
     }
 
     public function productos() {
-        // Ejemplo sencillo de listado de productos
         $stmt = $this->pdo->query("
             SELECT id, nombre, descripcion, precio, activo
             FROM productos
