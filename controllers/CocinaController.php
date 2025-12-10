@@ -9,61 +9,58 @@ class CocinaController {
         $this->pdo = $pdo;
     }
 
-    private function auth() {
-        if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['rol'], ['cocina','admin'])) {
-            header("Location: index.php?action=login");
-            exit;
-        }
-    }
-
+    /**
+     * Panel principal de cocina:
+     * - Lista pedidos 'pendiente' o 'preparando'
+     * - Muestra detalle de productos por pedido
+     */
     public function panel() {
-        $this->auth();
+        $sql = "
+            SELECT 
+                p.id,
+                p.nombre_cliente,
+                p.direccion,
+                p.telefono,
+                p.estado,
+                p.fecha,
+                COALESCE(
+                    STRING_AGG(
+                        (pd.cantidad::text || 'x ' || pr.nombre),
+                        ', '
+                    ),
+                    ''
+                ) AS detalle_productos
+            FROM pedidos p
+            LEFT JOIN pedido_detalle pd ON pd.id_pedido = p.id
+            LEFT JOIN productos pr ON pr.id = pd.id_producto
+            WHERE p.estado IN ('pendiente', 'preparando')
+            GROUP BY p.id, p.nombre_cliente, p.direccion, p.telefono, p.estado, p.fecha
+            ORDER BY p.fecha ASC;
+        ";
 
-        $sql = "SELECT 
-                    p.id,
-                    p.estado,
-                    p.total,
-                    p.fecha_creacion,
-                    c.nombre AS cliente_nombre,
-                    c.numero_whatsapp,
-                    GROUP_CONCAT(CONCAT(pd.cantidad,'x ',pr.nombre) SEPARATOR ' | ') AS items
-                FROM pedidos p
-                JOIN clientes c       ON c.id = p.cliente_id
-                JOIN pedido_detalle pd ON pd.pedido_id = p.id
-                JOIN productos pr      ON pr.id = pd.producto_id
-                WHERE p.estado IN ('pendiente','en_preparacion','listo')
-                GROUP BY p.id
-                ORDER BY p.fecha_creacion ASC";
-
-        $rows = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-        // Separar por estado para mostrar en columnas
-        $pedidosPendientes   = [];
-        $pedidosPreparacion  = [];
-        $pedidosListos       = [];
-
-        foreach ($rows as $p) {
-            if ($p['estado'] === 'pendiente') {
-                $pedidosPendientes[] = $p;
-            } elseif ($p['estado'] === 'en_preparacion') {
-                $pedidosPreparacion[] = $p;
-            } elseif ($p['estado'] === 'listo') {
-                $pedidosListos[] = $p;
-            }
-        }
+        $stmt    = $this->pdo->query($sql);
+        $pedidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         include __DIR__ . '/../views/cocina_panel.php';
     }
 
+    /**
+     * Cambiar estado de un pedido
+     */
     public function cambiarEstado() {
-        $this->auth();
-
-        $id     = $_POST['id'] ?? null;
+        $id     = $_POST['id']     ?? null;
         $estado = $_POST['estado'] ?? null;
 
-        if ($id && $estado && in_array($estado, ['pendiente','en_preparacion','listo','cancelado'])) {
-            $stmt = $this->pdo->prepare("UPDATE pedidos SET estado = :e WHERE id = :id");
-            $stmt->execute([':e' => $estado, ':id' => $id]);
+        if ($id && $estado) {
+            $stmt = $this->pdo->prepare("
+                UPDATE pedidos
+                SET estado = :estado
+                WHERE id = :id
+            ");
+            $stmt->execute([
+                ':estado' => $estado,
+                ':id'     => $id,
+            ]);
         }
 
         header("Location: index.php?action=cocina");
