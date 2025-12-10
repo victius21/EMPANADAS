@@ -26,9 +26,8 @@ class AuthController {
             $stmt->execute([':c' => $correo]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Comparación en texto plano (solo desarrollo)
+            // Comparación en texto plano (SOLO desarrollo)
             if ($user && $pass === $user['password_hash']) {
-
                 $_SESSION['user'] = [
                     'id'   => $user['id'],
                     'rol'  => $user['rol'],
@@ -40,7 +39,7 @@ class AuthController {
                     header("Location: index.php?action=admin");
                 } elseif ($user['rol'] === 'cocina') {
                     header("Location: index.php?action=cocina");
-                } else {
+                } else { // repartidor
                     header("Location: index.php?action=repartidor");
                 }
                 exit;
@@ -49,7 +48,7 @@ class AuthController {
             }
         }
 
-        // Cargar vista de login
+        // Vista de login
         include __DIR__ . '/../views/auth_login.php';
     }
 
