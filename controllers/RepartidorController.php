@@ -1,17 +1,64 @@
 <?php
-class RepartidorController{
- private $pdo;
- function __construct($pdo){$this->pdo=$pdo;}
- function panel(){
-  $sql="SELECT p.id,p.estado,p.total,c.nombre,
-  GROUP_CONCAT(CONCAT(pd.cantidad,'x ',pr.nombre) SEPARATOR ' | ') items
-  FROM pedidos p 
-  JOIN clientes c ON c.id=p.cliente_id
-  JOIN pedido_detalle pd ON pd.pedido_id=p.id
-  JOIN productos pr ON pr.id=pd.producto_id
-  WHERE p.estado IN ('listo','en_preparacion')
-  GROUP BY p.id";
-  $pedidos=$this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-  include __DIR__.'/../views/repartidor_panel.php';
- }
+// controllers/RepartidorController.php
+
+class RepartidorController {
+    /** @var PDO */
+    private $pdo;
+
+    public function __construct(PDO $pdo) {
+        $this->pdo = $pdo;
+    }
+
+    /**
+     * Panel del repartidor:
+     * - Lista pedidos en 'preparando' o 'en_camino'
+     */
+    public function panel() {
+        $sql = "
+            SELECT 
+                p.id,
+                p.nombre_cliente,
+                p.direccion,
+                p.telefono,
+                p.estado,
+                p.fecha,
+                COALESCE(
+                    STRING_AGG(
+                        (pd.cantidad::text || 'x ' || pr.nombre),
+                        ', '
+                    ),
+                    ''
+                ) AS detalle_productos
+            FROM pedidos p
+            LEFT JOIN pedido_detalle pd ON pd.id_pedido = p.id
+            LEFT JOIN productos pr ON pr.id = pd.id_producto
+            WHERE p.estado IN ('preparando', 'en_camino')
+            GROUP BY p.id, p.nombre_cliente, p.direccion, p.telefono, p.estado, p.fecha
+            ORDER BY p.fecha ASC;
+        ";
+
+        $stmt    = $this->pdo->query($sql);
+        $pedidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        include __DIR__ . '/../views/repartidor_panel.php';
+    }
+
+    /**
+     * Marcar pedido como entregado
+     */
+    public function confirmarEntrega() {
+        $id = $_POST['id'] ?? null;
+
+        if ($id) {
+            $stmt = $this->pdo->prepare("
+                UPDATE pedidos
+                SET estado = 'entregado'
+                WHERE id = :id
+            ");
+            $stmt->execute([':id' => $id]);
+        }
+
+        header("Location: index.php?action=repartidor");
+        exit;
+    }
 }
