@@ -1,18 +1,27 @@
 <?php
 // controllers/ClienteController.php
 
+require_once __DIR__ . '/../config/MongoLogger.php';
+
 class ClienteController
 {
     private PDO $pdo;
+    private MongoLogger $logger;
 
     public function __construct(PDO $pdo)
     {
-        $this->pdo = $pdo;
+        $this->pdo    = $pdo;
+        $this->logger = new MongoLogger();
     }
 
     /* Página de inicio: Empanadas Colombianas + botones */
     public function home()
     {
+        // Log: visita a la home de clientes
+        $this->logger->logEvent('cliente_home_visit', [
+            'sesion_cliente_id' => $_SESSION['cliente_id'] ?? null,
+        ]);
+
         require __DIR__ . '/../views/home.php';
     }
 
@@ -28,14 +37,30 @@ class ClienteController
             $telefono  = trim($_POST['telefono'] ?? '');
             $direccion = trim($_POST['direccion'] ?? '');
 
+            // Log intento de registro
+            $this->logger->logEvent('cliente_registro_intento', [
+                'email'    => $email,
+                'nombre'   => $nombre,
+                'telefono' => $telefono,
+            ]);
+
             if ($nombre === '' || $email === '' || $password === '') {
                 $mensaje = "Nombre, correo y contraseña son obligatorios.";
+
+                $this->logger->logEvent('cliente_registro_error_datos', [
+                    'email'  => $email,
+                    'nombre' => $nombre,
+                ]);
             } else {
                 $stmt = $this->pdo->prepare("SELECT id FROM clientes WHERE email = :email");
                 $stmt->execute(['email' => $email]);
 
                 if ($stmt->fetch()) {
                     $mensaje = "Ya existe una cuenta con ese correo.";
+
+                    $this->logger->logEvent('cliente_registro_email_duplicado', [
+                        'email' => $email,
+                    ]);
                 } else {
                     $hash = password_hash($password, PASSWORD_DEFAULT);
 
@@ -44,16 +69,28 @@ class ClienteController
                         VALUES (:nombre, :email, :password_hash, :telefono, :direccion)
                     ");
 
-                    if ($stmt->execute([
+                    $ok = $stmt->execute([
                         'nombre'        => $nombre,
                         'email'         => $email,
                         'password_hash' => $hash,
                         'telefono'      => $telefono,
                         'direccion'     => $direccion
-                    ])) {
+                    ]);
+
+                    if ($ok) {
                         $mensaje = "Registro exitoso. Ahora puedes iniciar sesión.";
+
+                        $this->logger->logEvent('cliente_registro_exitoso', [
+                            'email'  => $email,
+                            'nombre' => $nombre,
+                        ]);
                     } else {
                         $mensaje = "Ocurrió un error al registrar.";
+
+                        $this->logger->logEvent('cliente_registro_error_bd', [
+                            'email'  => $email,
+                            'nombre' => $nombre,
+                        ]);
                     }
                 }
             }
@@ -71,8 +108,17 @@ class ClienteController
             $email    = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
 
+            // Log intento de login
+            $this->logger->logEvent('cliente_login_intento', [
+                'email' => $email,
+            ]);
+
             if ($email === '' || $password === '') {
                 $mensaje = "Ingresa tu correo y contraseña.";
+
+                $this->logger->logEvent('cliente_login_error_datos', [
+                    'email' => $email,
+                ]);
             } else {
                 $stmt = $this->pdo->prepare("SELECT id, nombre, password_hash FROM clientes WHERE email = :email");
                 $stmt->execute(['email' => $email]);
@@ -82,10 +128,20 @@ class ClienteController
                     $_SESSION['cliente_id']     = $cliente['id'];
                     $_SESSION['cliente_nombre'] = $cliente['nombre'];
 
+                    $this->logger->logEvent('cliente_login_ok', [
+                        'cliente_id' => $cliente['id'],
+                        'email'      => $email,
+                        'nombre'     => $cliente['nombre'],
+                    ]);
+
                     header('Location: index.php?action=cliente-menu');
                     exit;
                 } else {
                     $mensaje = "Correo o contraseña incorrectos.";
+
+                    $this->logger->logEvent('cliente_login_error_credenciales', [
+                        'email' => $email,
+                    ]);
                 }
             }
         }
@@ -97,6 +153,7 @@ class ClienteController
     public function menu()
     {
         if (!isset($_SESSION['cliente_id'])) {
+            $this->logger->logEvent('cliente_menu_acceso_sin_sesion', []);
             header('Location: index.php?action=cliente-login');
             exit;
         }
@@ -112,11 +169,22 @@ class ClienteController
         $clienteNombre = $nombre;
         $waUrl         = $whatsappUrl;
 
+        // Log acceso al menú
+        $this->logger->logEvent('cliente_menu_acceso', [
+            'cliente_id' => $_SESSION['cliente_id'],
+            'nombre'     => $nombre,
+        ]);
+
         require __DIR__ . '/../views/cliente_menu.php';
     }
 
     public function logout()
     {
+        $this->logger->logEvent('cliente_logout', [
+            'cliente_id' => $_SESSION['cliente_id'] ?? null,
+            'nombre'     => $_SESSION['cliente_nombre'] ?? null,
+        ]);
+
         unset($_SESSION['cliente_id'], $_SESSION['cliente_nombre']);
         header('Location: index.php?action=home');
         exit;
