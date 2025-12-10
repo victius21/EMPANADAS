@@ -1,6 +1,8 @@
 <?php
 // controllers/RepartidorController.php
 
+require_once __DIR__ . '/../config/MongoLogger.php';
+
 class RepartidorController {
     /** @var PDO */
     private $pdo;
@@ -50,12 +52,22 @@ class RepartidorController {
         $id = $_POST['id'] ?? null;
 
         if ($id) {
+            // 1) Leer estado anterior
+            $stmt = $this->pdo->prepare("SELECT estado FROM pedidos WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            $estadoAnterior = $stmt->fetchColumn();
+
+            // 2) Actualizar a 'entregado'
             $stmt = $this->pdo->prepare("
                 UPDATE pedidos
                 SET estado = 'entregado'
                 WHERE id = :id
             ");
             $stmt->execute([':id' => $id]);
+
+            // 3) Log en Mongo
+            $mongo = new MongoLogger();
+            $mongo->logCambioEstadoPedido((int)$id, $estadoAnterior ? (string)$estadoAnterior : null, 'entregado');
         }
 
         header("Location: index.php?action=repartidor");
