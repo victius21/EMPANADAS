@@ -10,26 +10,25 @@ class AuthController {
     }
 
     public function login() {
-        // Si viene por POST, intentamos iniciar sesión
+        $error = null;
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $correo = $_POST['correo']   ?? '';
             $pass   = $_POST['password'] ?? '';
 
             // Buscar usuario por correo
             $stmt = $this->pdo->prepare("
-                SELECT * 
-                FROM usuarios 
-                WHERE correo = :c AND activo = 1
+                SELECT *
+                FROM usuarios
+                WHERE correo = :c AND activo = TRUE
                 LIMIT 1
             ");
             $stmt->execute([':c' => $correo]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // *** IMPORTANTE: comparación en TEXTO PLANO (solo para desarrollo) ***
-            // password_hash se está usando como campo donde guardamos la contraseña tal cual
+            // Comparación en TEXTO PLANO (solo desarrollo)
             if ($user && $pass === $user['password_hash']) {
 
-                // Guardamos datos mínimos en sesión
                 $_SESSION['user'] = [
                     'id'   => $user['id'],
                     'rol'  => $user['rol'],
@@ -41,7 +40,7 @@ class AuthController {
                     header("Location: index.php?action=admin");
                 } elseif ($user['rol'] === 'cocina') {
                     header("Location: index.php?action=cocina");
-                } else { // repartidor
+                } else {
                     header("Location: index.php?action=repartidor");
                 }
                 exit;
@@ -50,7 +49,7 @@ class AuthController {
             }
         }
 
-        // Mostrar vista de login
+        // Vista de login (asegúrate de que exista este archivo)
         include __DIR__ . '/../views/auth_login.php';
     }
 
