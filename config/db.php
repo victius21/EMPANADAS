@@ -17,7 +17,7 @@ class Database {
             $this->conn = new PDO($dsn, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            // Crear esquema si no existe
+            // Crear / actualizar esquema
             $this->createSchema($this->conn);
 
         } catch (PDOException $exception) {
@@ -29,21 +29,26 @@ class Database {
 
     private function createSchema(PDO $pdo) {
         $sql = "
-        -- USUARIOS
+        -- =========================
+        -- TABLA USUARIOS
+        -- =========================
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
             nombre VARCHAR(100) NOT NULL,
             correo VARCHAR(100) UNIQUE NOT NULL,
             password_hash VARCHAR(255) NOT NULL,
-            rol VARCHAR(20) NOT NULL,
+            rol VARCHAR(20) NOT NULL,        -- 'admin', 'cocina', 'repartidor'
             activo BOOLEAN DEFAULT TRUE
         );
 
+        -- Usuario admin por defecto
         INSERT INTO usuarios (nombre, correo, password_hash, rol, activo)
         VALUES ('Administrador', 'admin@local', '1234', 'admin', TRUE)
         ON CONFLICT (correo) DO NOTHING;
 
-        -- CLIENTES (para el dashboard de Admin)
+        -- =========================
+        -- TABLA CLIENTES
+        -- =========================
         CREATE TABLE IF NOT EXISTS clientes (
             id SERIAL PRIMARY KEY,
             nombre VARCHAR(100) NOT NULL,
@@ -51,7 +56,9 @@ class Database {
             direccion TEXT
         );
 
-        -- PRODUCTOS
+        -- =========================
+        -- TABLA PRODUCTOS
+        -- =========================
         CREATE TABLE IF NOT EXISTS productos (
             id SERIAL PRIMARY KEY,
             nombre VARCHAR(100) NOT NULL,
@@ -60,7 +67,9 @@ class Database {
             activo BOOLEAN DEFAULT TRUE
         );
 
-        -- PEDIDOS
+        -- =========================
+        -- TABLA PEDIDOS
+        -- =========================
         CREATE TABLE IF NOT EXISTS pedidos (
             id SERIAL PRIMARY KEY,
             nombre_cliente VARCHAR(100) NOT NULL,
@@ -70,7 +79,13 @@ class Database {
             fecha TIMESTAMP DEFAULT NOW()
         );
 
-        -- DETALLE PEDIDOS
+        -- Asegurar columna total (para dashboard)
+        ALTER TABLE IF EXISTS pedidos
+            ADD COLUMN IF NOT EXISTS total NUMERIC(10,2) DEFAULT 0;
+
+        -- =========================
+        -- TABLA DETALLE PEDIDOS
+        -- =========================
         CREATE TABLE IF NOT EXISTS pedido_detalle (
             id SERIAL PRIMARY KEY,
             id_pedido INT REFERENCES pedidos(id) ON DELETE CASCADE,
