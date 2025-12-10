@@ -52,6 +52,8 @@ class Database {
         CREATE TABLE IF NOT EXISTS clientes (
             id SERIAL PRIMARY KEY,
             nombre VARCHAR(100) NOT NULL,
+            email VARCHAR(150),
+            password_hash VARCHAR(255),
             telefono VARCHAR(20),
             direccion TEXT
         );
@@ -95,6 +97,18 @@ class Database {
         );
         ";
 
+        // Ejecuta la parte principal
         $pdo->exec($sql);
+
+        // 🔧 Por si la tabla clientes ya existía sin estas columnas:
+        $pdo->exec("
+            ALTER TABLE IF EXISTS clientes
+                ADD COLUMN IF NOT EXISTS email VARCHAR(150);
+        ");
+
+        $pdo->exec("
+            ALTER TABLE IF EXISTS clientes
+                ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
+        ");
     }
 }
