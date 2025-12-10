@@ -12,6 +12,7 @@ require_once __DIR__ . '/../controllers/AdminController.php';
 require_once __DIR__ . '/../controllers/CocinaController.php';
 require_once __DIR__ . '/../controllers/RepartidorController.php';
 require_once __DIR__ . '/../controllers/InventarioController.php';
+require_once __DIR__ . '/../controllers/ClienteController.php'; // <-- NUEVO
 
 // 2) Crear la conexión PDO
 $db  = new Database();
@@ -27,13 +28,36 @@ $adminController      = new AdminController($pdo);
 $cocinaController     = new CocinaController($pdo);
 $repartidorController = new RepartidorController($pdo);
 $inventarioController = new InventarioController($pdo);
+$clienteController    = new ClienteController($pdo); // <-- NUEVO
 
 // 4) Router
-$action = $_GET['action'] ?? 'login';
+$action = $_GET['action'] ?? 'home';   // <-- por defecto va a la página de inicio clientes
 
 switch ($action) {
 
-    /* LOGIN / LOGOUT */
+    /* HOME CLIENTES */
+    case 'home':
+        $clienteController->home();
+        break;
+
+    /* LOGIN / REGISTRO CLIENTES */
+    case 'cliente-login':
+        $clienteController->login();
+        break;
+
+    case 'cliente-registro':
+        $clienteController->registro();
+        break;
+
+    case 'cliente-menu':
+        $clienteController->menu();
+        break;
+
+    case 'cliente-logout':
+        $clienteController->logout();
+        break;
+
+    /* LOGIN / LOGOUT PERSONAL (admin/cocina/repartidor) */
     case 'login':
         $authController->login();
         break;
