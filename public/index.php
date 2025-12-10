@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 
 session_start();
 
-// 1) Cargar la clase Database y los controladores
+// 1) Conexión y controladores
 require_once __DIR__ . '/../config/db.php';
 
 require_once __DIR__ . '/../controllers/AuthController.php';
@@ -13,23 +13,22 @@ require_once __DIR__ . '/../controllers/CocinaController.php';
 require_once __DIR__ . '/../controllers/RepartidorController.php';
 require_once __DIR__ . '/../controllers/InventarioController.php';
 
-// 2) Crear la conexión PDO UNA sola vez
+// 2) Crear la conexión PDO
 $db  = new Database();
 $pdo = $db->getConnection();
 
-// Si falló la conexión, detenemos todo
 if (!$pdo) {
     die('Error: no se pudo conectar a la base de datos.');
 }
 
-// 3) Crear instancias de controladores reutilizando el mismo $pdo
+// 3) Instanciar controladores
 $authController       = new AuthController($pdo);
 $adminController      = new AdminController($pdo);
 $cocinaController     = new CocinaController($pdo);
 $repartidorController = new RepartidorController($pdo);
 $inventarioController = new InventarioController($pdo);
 
-// 4) Router de acciones
+// 4) Router
 $action = $_GET['action'] ?? 'login';
 
 switch ($action) {
@@ -75,7 +74,6 @@ switch ($action) {
         $inventarioController->panel();
         break;
 
-    /* CORTE DE CAJA */
     case 'inventario-corte':
         $inventarioController->corte();
         break;
