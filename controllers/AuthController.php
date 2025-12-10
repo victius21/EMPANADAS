@@ -26,7 +26,7 @@ class AuthController {
             $stmt->execute([':c' => $correo]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Comparación en TEXTO PLANO (solo desarrollo)
+            // Comparación en texto plano (solo desarrollo)
             if ($user && $pass === $user['password_hash']) {
 
                 $_SESSION['user'] = [
@@ -49,7 +49,7 @@ class AuthController {
             }
         }
 
-        // Vista de login (asegúrate de que exista este archivo)
+        // Cargar vista de login
         include __DIR__ . '/../views/auth_login.php';
     }
 
