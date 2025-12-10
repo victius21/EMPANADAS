@@ -14,8 +14,16 @@ RUN apt-get update && apt-get install -y \
     && a2enmod rewrite \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Carpeta de trabajo dentro del contenedor
+# 🔹 Cambiar DocumentRoot de Apache a /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' \
+    /etc/apache2/sites-available/000-default.conf \
+    /etc/apache2/apache2.conf
+
+# Carpeta de trabajo
 WORKDIR /var/www/html
 
 # Copiar TODO el proyecto al contenedor
 COPY . /var/www/html
+
+# (Opcional) Asegurar permisos
+RUN chown -R www-data:www-data /var/www/html
