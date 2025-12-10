@@ -17,7 +17,7 @@ class Database {
             $this->conn = new PDO($dsn, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            // 🔹 IMPORTANTE: crear tablas si no existen
+            // Crear esquema si no existe
             $this->createSchema($this->conn);
 
         } catch (PDOException $exception) {
@@ -27,9 +27,6 @@ class Database {
         return $this->conn;
     }
 
-    /**
-     * Crea las tablas necesarias si no existen
-     */
     private function createSchema(PDO $pdo) {
         $sql = "
         -- USUARIOS
@@ -38,14 +35,21 @@ class Database {
             nombre VARCHAR(100) NOT NULL,
             correo VARCHAR(100) UNIQUE NOT NULL,
             password_hash VARCHAR(255) NOT NULL,
-            rol VARCHAR(20) NOT NULL,      -- 'admin', 'cocina', 'repartidor'
+            rol VARCHAR(20) NOT NULL,
             activo BOOLEAN DEFAULT TRUE
         );
 
-        -- Usuario admin por defecto: admin@local / 1234
         INSERT INTO usuarios (nombre, correo, password_hash, rol, activo)
         VALUES ('Administrador', 'admin@local', '1234', 'admin', TRUE)
         ON CONFLICT (correo) DO NOTHING;
+
+        -- CLIENTES (para el dashboard de Admin)
+        CREATE TABLE IF NOT EXISTS clientes (
+            id SERIAL PRIMARY KEY,
+            nombre VARCHAR(100) NOT NULL,
+            telefono VARCHAR(20),
+            direccion TEXT
+        );
 
         -- PRODUCTOS
         CREATE TABLE IF NOT EXISTS productos (
