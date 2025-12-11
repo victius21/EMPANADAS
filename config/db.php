@@ -3,12 +3,12 @@
 
 class Database {
 
-    // 🔹 Datos de Supabase (los que vimos en tu captura)
-    private $host = "db.fjlsgephvzmblqhxmvu.supabase.co";
+    // 🔹 Datos de Supabase usando Session Pooler
+    private $host = "aws-0-XXXXXX.pooler.supabase.com"; // <-- PON AQUÍ EL HOST NUEVO
     private $port = "5432";
     private $db_name = "postgres";
     private $username = "postgres";
-    private $password = "123456";  // ✔ Tu contraseña real de Supabase
+    private $password = "123456";  // tu pass
 
     public $conn;
 
@@ -16,15 +16,12 @@ class Database {
         $this->conn = null;
 
         try {
-            // Supabase requiere SSL
             $dsn = "pgsql:host={$this->host};port={$this->port};dbname={$this->db_name};sslmode=require";
 
             $this->conn = new PDO($dsn, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            // Ya NO creamos el esquema desde PHP.
-            // La base de datos ya vive en Supabase con los scripts que ejecutaste.
-            // $this->createSchema($this->conn);
+            // $this->createSchema($this->conn);  // NO lo usamos ya
 
         } catch (PDOException $exception) {
             echo "Error de conexión: " . $exception->getMessage();
@@ -33,8 +30,5 @@ class Database {
         return $this->conn;
     }
 
-    // Dejado vacío para no modificar nada en Supabase desde código
-    private function createSchema(PDO $pdo) {
-        // Intencionalmente vacío
-    }
+    private function createSchema(PDO $pdo) {}
 }
