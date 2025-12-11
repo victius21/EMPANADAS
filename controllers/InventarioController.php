@@ -23,7 +23,7 @@ class InventarioController {
                 pr.activo,
                 COALESCE(SUM(pd.cantidad), 0) AS total_vendido
             FROM productos pr
-            LEFT JOIN pedido_detalle pd ON pd.id_producto = pr.id
+            LEFT JOIN detalle_pedido pd ON pd.id_producto = pr.id
             GROUP BY pr.id, pr.nombre, pr.descripcion, pr.precio, pr.activo
             ORDER BY pr.nombre ASC;
         ";
@@ -68,3 +68,4 @@ class InventarioController {
         include __DIR__ . '/../views/inventario_corte.php';
     }
 }
+
