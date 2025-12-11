@@ -1,6 +1,18 @@
 <?php ob_start(); ?>
 
 <h3 class="mb-3">Gestión de productos 🧀</h3>
+<?php if (!empty($flash['exito'])): ?>
+  <div class="alert alert-success py-2">
+    <?= htmlspecialchars($flash['exito']) ?>
+  </div>
+<?php endif; ?>
+
+<?php if (!empty($flash['error'])): ?>
+  <div class="alert alert-danger py-2">
+    <?= htmlspecialchars($flash['error']) ?>
+  </div>
+<?php endif; ?>
+
 <p class="text-muted mb-4">
   Aquí registras las empanadas, combos y bebidas que el bot ofrecerá a los clientes por WhatsApp.
 </p>
@@ -78,3 +90,4 @@
 $content = ob_get_clean();
 $title = "Productos";
 include __DIR__ . '/layout.php';
+
