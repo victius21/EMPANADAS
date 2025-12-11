@@ -156,7 +156,7 @@
                     </div>
 
                     <div class="col-md-5 text-center">
-                        <img src="https://images.pexels.com/photos/6605642/pexels-photo-6605642.jpeg?auto=compress&cs=tinysrgb&w=600"
+                        <img src="https://i.ytimg.com/vi/hcV2gZqG-Qg/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLBOCWm3gkdCFhKWBHcBH3uqeRZkJw"
                              alt="Empanadas colombianas"
                              class="img-fluid rounded-4 shadow-sm mb-3">
                         <p class="small text-muted mb-0">
@@ -176,21 +176,21 @@
                 <div class="feature-card">
                     <h5>Empanada de carne</h5>
                     <p class="small text-muted mb-2">La clásica colombiana, crujiente y jugosa.</p>
-                    <p class="fw-bold mb-0">$15.00</p>
+                    <p class="fw-bold mb-0">$20.00</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
                     <h5>Empanada de pollo</h5>
                     <p class="small text-muted mb-2">Rellena de pollo deshebrado con sazón casero.</p>
-                    <p class="fw-bold mb-0">$15.00</p>
+                    <p class="fw-bold mb-0">$20.00</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
                     <h5>Empanada de queso</h5>
                     <p class="small text-muted mb-2">Ideal para los amantes del queso derretido.</p>
-                    <p class="fw-bold mb-0">$14.00</p>
+                    <p class="fw-bold mb-0">$15.00</p>
                 </div>
             </div>
         </div>
