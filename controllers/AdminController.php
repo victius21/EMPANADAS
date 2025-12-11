@@ -35,8 +35,15 @@ class AdminController {
     }
 
     public function productos() {
+        // En Supabase definimos "disponible" en lugar de "activo".
+        // Lo aliasamos como "activo" para que las vistas sigan funcionando.
         $stmt = $this->pdo->query("
-            SELECT id, nombre, descripcion, precio, activo
+            SELECT 
+                id, 
+                nombre, 
+                descripcion, 
+                precio, 
+                disponible AS activo
             FROM productos
             ORDER BY id DESC
         ");
