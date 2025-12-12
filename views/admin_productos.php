@@ -25,7 +25,9 @@
       <p class="small text-muted">
         Dale nombre sabroso y precio justo, parce.
       </p>
-      <form method="post">
+
+      <!-- ✅ IMPORTANTE: apuntar a admin-prod -->
+      <form method="post" action="index.php?action=admin-prod">
         <div class="mb-2">
           <label class="form-label">Nombre</label>
           <input name="nombre" class="form-control" placeholder="Empanada de carne" required>
@@ -54,6 +56,7 @@
           <?= isset($productos) ? count($productos) : 0 ?> productos
         </span>
       </div>
+
       <?php if (empty($productos)): ?>
         <p class="text-muted small mb-0">
           Aún no hay productos. Empieza agregando la clásica empanada de carne, pollo o de lo que se te ocurra 😋
@@ -67,15 +70,32 @@
                 <th>Nombre</th>
                 <th>Descripción</th>
                 <th class="text-end">Precio</th>
+                <th class="text-end">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <?php foreach ($productos as $p): ?>
                 <tr>
-                  <td><?= $p['id'] ?></td>
+                  <td><?= (int)$p['id'] ?></td>
                   <td><strong><?= htmlspecialchars($p['nombre']) ?></strong></td>
                   <td class="small"><?= nl2br(htmlspecialchars($p['descripcion'])) ?></td>
-                  <td class="text-end">$<?= number_format($p['precio'], 2) ?></td>
+                  <td class="text-end">$<?= number_format((float)$p['precio'], 2) ?></td>
+
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-warning"
+                      href="index.php?action=admin-prod-edit&id=<?= (int)$p['id'] ?>">
+                      Editar
+                    </a>
+
+                    <form method="POST"
+                          action="index.php?action=admin-prod-delete"
+                          style="display:inline;"
+                          onsubmit="return confirm('¿Eliminar este producto?');">
+                      <input type="hidden" name="id" value="<?= (int)$p['id'] ?>">
+                      <button class="btn btn-sm btn-danger" type="submit">Eliminar</button>
+                    </form>
+                  </td>
+
                 </tr>
               <?php endforeach; ?>
             </tbody>
@@ -90,4 +110,3 @@
 $content = ob_get_clean();
 $title = "Productos";
 include __DIR__ . '/layout.php';
-
