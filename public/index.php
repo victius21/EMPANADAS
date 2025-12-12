@@ -12,7 +12,7 @@ require_once __DIR__ . '/../controllers/AdminController.php';
 require_once __DIR__ . '/../controllers/CocinaController.php';
 require_once __DIR__ . '/../controllers/RepartidorController.php';
 require_once __DIR__ . '/../controllers/InventarioController.php';
-require_once __DIR__ . '/../controllers/ClienteController.php'; // <-- NUEVO
+require_once __DIR__ . '/../controllers/ClienteController.php';
 
 // 2) Crear la conexión PDO
 $db  = new Database();
@@ -28,10 +28,10 @@ $adminController      = new AdminController($pdo);
 $cocinaController     = new CocinaController($pdo);
 $repartidorController = new RepartidorController($pdo);
 $inventarioController = new InventarioController($pdo);
-$clienteController    = new ClienteController($pdo); // <-- NUEVO
+$clienteController    = new ClienteController($pdo);
 
 // 4) Router
-$action = $_GET['action'] ?? 'home';   // <-- por defecto va a la página de inicio clientes
+$action = $_GET['action'] ?? 'home';
 
 switch ($action) {
 
@@ -73,6 +73,19 @@ switch ($action) {
 
     case 'admin-prod':
         $adminController->productos();
+        break;
+
+    // ✅ NUEVAS RUTAS PARA EDITAR / ACTUALIZAR / ELIMINAR PRODUCTOS
+    case 'admin-prod-edit':
+        $adminController->productoEdit();
+        break;
+
+    case 'admin-prod-update':
+        $adminController->productoUpdate();
+        break;
+
+    case 'admin-prod-delete':
+        $adminController->productoDelete();
         break;
 
     /* COCINA */
