@@ -59,9 +59,6 @@ class AdminController {
                 $mensajeError = "Nombre y precio son obligatorios.";
             } else {
                 try {
-                    // En la tabla productos de Supabase tenemos:
-                    // id, nombre, descripcion, precio, categoria_id, disponible, ...
-                    // Insertamos solo estos campos (disponible queda en TRUE por default)
                     $stmt = $this->pdo->prepare("
                         INSERT INTO productos (nombre, descripcion, precio)
                         VALUES (:nombre, :descripcion, :precio)
@@ -81,7 +78,6 @@ class AdminController {
         }
 
         // 2) Siempre listamos productos para mostrarlos en la tabla
-        //    Usamos disponible AS activo para que la vista siga usando 'activo'
         try {
             $stmt = $this->pdo->query("
                 SELECT 
@@ -99,12 +95,112 @@ class AdminController {
             $mensajeError = "Error al cargar productos: " . $e->getMessage();
         }
 
-        // 3) Pasamos también los mensajes a la vista
         $flash = [
             'exito' => $mensajeExito,
             'error' => $mensajeError,
         ];
 
         include __DIR__ . '/../views/admin_productos.php';
+    }
+
+    // ============================================================
+    // ✅ EDITAR PRODUCTO (FORM)
+    // ============================================================
+    public function productoEdit() {
+        $id = (int)($_GET['id'] ?? 0);
+
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT id, nombre, descripcion, precio, disponible
+                FROM productos
+                WHERE id = :id
+            ");
+            $stmt->execute([':id' => $id]);
+            $producto = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$producto) {
+                header("Location: index.php?action=admin-prod");
+                exit;
+            }
+
+            include __DIR__ . '/../views/admin_producto_edit.php';
+
+        } catch (PDOException $e) {
+            header("Location: index.php?action=admin-prod");
+            exit;
+        }
+    }
+
+    // ============================================================
+    // ✅ ACTUALIZAR PRODUCTO (UPDATE)
+    // ============================================================
+    public function productoUpdate() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=admin-prod");
+            exit;
+        }
+
+        $id          = (int)($_POST['id'] ?? 0);
+        $nombre      = trim($_POST['nombre'] ?? '');
+        $descripcion = trim($_POST['descripcion'] ?? '');
+        $precioRaw   = trim($_POST['precio'] ?? '');
+        $precio      = $precioRaw !== '' ? (float)$precioRaw : null;
+
+        // checkbox: si viene marcado -> 1, si no -> 0
+        $disponible  = isset($_POST['disponible']) ? 1 : 0;
+
+        if ($id <= 0 || $nombre === '' || $precio === null) {
+            header("Location: index.php?action=admin-prod");
+            exit;
+        }
+
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE productos
+                SET nombre = :nombre,
+                    descripcion = :descripcion,
+                    precio = :precio,
+                    disponible = :disponible
+                WHERE id = :id
+            ");
+            $stmt->execute([
+                ':nombre' => $nombre,
+                ':descripcion' => $descripcion,
+                ':precio' => $precio,
+                ':disponible' => $disponible,
+                ':id' => $id
+            ]);
+        } catch (PDOException $e) {
+            // opcional: log
+        }
+
+        header("Location: index.php?action=admin-prod");
+        exit;
+    }
+
+    // ============================================================
+    // ✅ ELIMINAR PRODUCTO (DELETE o borrado lógico)
+    // ============================================================
+    public function productoDelete() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=admin-prod");
+            exit;
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+
+        try {
+            // DELETE REAL:
+            $stmt = $this->pdo->prepare("DELETE FROM productos WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+
+        } catch (PDOException $e) {
+            // ✅ Si falla por FK, haz borrado lógico:
+            $stmt = $this->pdo->prepare("UPDATE productos SET disponible = FALSE WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+        }
+
+        header("Location: index.php?action=admin-prod");
+        exit;
     }
 }
