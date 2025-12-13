@@ -59,28 +59,62 @@
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <?php if(isset($_SESSION['user'])): ?>
+
           <?php if($_SESSION['user']['rol'] === 'admin'): ?>
-            <li class="nav-item"><a class="nav-link" href="index.php?action=admin">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="index.php?action=admin-prod">Productos</a></li>
-            <li class="nav-item"><a class="nav-link" href="index.php?action=cocina">Cocina</a></li>
-            <li class="nav-item"><a class="nav-link" href="index.php?action=repartidor">Repartidor</a></li>
-            <li class="nav-item"><a class="nav-link" href="index.php?action=inventario">Inventario</a></li>
-            <li class="nav-item"><a class="nav-link" href="index.php?action=inventario-corte">Corte de Caja</a></li>
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?action=admin">Dashboard</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?action=admin-prod">Productos</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?action=cocina">Cocina</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?action=repartidor">Repartidor</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?action=inventario">Inventario</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?action=inventario-corte">Corte de Caja</a>
+            </li>
+
+            <!-- ✅ NUEVO: INSUMOS -->
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?action=insumos">Insumos</a>
+            </li>
+
           <?php elseif($_SESSION['user']['rol'] === 'cocina'): ?>
-            <li class="nav-item"><a class="nav-link" href="index.php?action=cocina">Cocina</a></li>
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?action=cocina">Cocina</a>
+            </li>
+
           <?php elseif($_SESSION['user']['rol'] === 'repartidor'): ?>
-            <li class="nav-item"><a class="nav-link" href="index.php?action=repartidor">Repartidor</a></li>
+            <li class="nav-item">
+              <a class="nav-link" href="index.php?action=repartidor">Repartidor</a>
+            </li>
           <?php endif; ?>
+
         <?php endif; ?>
       </ul>
 
       <div class="d-flex align-items-center text-white">
         <?php if(isset($_SESSION['user'])): ?>
           <span class="me-3 small">
-            👤 <?= htmlspecialchars($_SESSION['user']['name']) ?> 
-            <span class="badge bg-light text-dark ms-1"><?= htmlspecialchars($_SESSION['user']['rol']) ?></span>
+            👤 <?= htmlspecialchars($_SESSION['user']['name']) ?>
+            <span class="badge bg-light text-dark ms-1">
+              <?= htmlspecialchars($_SESSION['user']['rol']) ?>
+            </span>
           </span>
-          <a href="index.php?action=logout" class="btn btn-sm btn-outline-light">Salir</a>
+          <a href="index.php?action=logout" class="btn btn-sm btn-outline-light">
+            Salir
+          </a>
         <?php endif; ?>
       </div>
     </div>
