@@ -20,11 +20,11 @@ class InventarioController {
                 pr.nombre,
                 pr.descripcion,
                 pr.precio,
-                pr.activo,
-                COALESCE(SUM(pd.cantidad), 0) AS total_vendido
+                pr.disponible,
+                COALESCE(SUM(dp.cantidad), 0) AS total_vendido
             FROM productos pr
-            LEFT JOIN detalle_pedido pd ON pd.id_producto = pr.id
-            GROUP BY pr.id, pr.nombre, pr.descripcion, pr.precio, pr.activo
+            LEFT JOIN detalle_pedido dp ON dp.producto_id = pr.id
+            GROUP BY pr.id, pr.nombre, pr.descripcion, pr.precio, pr.disponible
             ORDER BY pr.nombre ASC;
         ";
 
@@ -40,32 +40,5 @@ class InventarioController {
      * - Ventas agrupadas por día
      */
     public function corte() {
-        // Resumen general
         $resumen = $this->pdo->query("
             SELECT 
-                COUNT(*) AS total_pedidos,
-                COALESCE(SUM(total), 0) AS total_ventas
-            FROM pedidos
-        ")->fetch(PDO::FETCH_ASSOC);
-
-        // Ventas por día
-        $stmt = $this->pdo->query("
-            SELECT 
-                DATE(fecha) AS dia,
-                COUNT(*) AS pedidos_dia,
-                COALESCE(SUM(total), 0) AS ventas_dia
-            FROM pedidos
-            GROUP BY DATE(fecha)
-            ORDER BY dia DESC
-        ");
-        $cortes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $data = [
-            'resumen' => $resumen,
-            'cortes'  => $cortes,
-        ];
-
-        include __DIR__ . '/../views/inventario_corte.php';
-    }
-}
-
