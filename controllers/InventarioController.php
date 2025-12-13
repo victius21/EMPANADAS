@@ -9,10 +9,6 @@ class InventarioController {
         $this->pdo = $pdo;
     }
 
-    /**
-     * Panel de inventario:
-     * - Lista productos y cuánto se ha vendido de cada uno
-     */
     public function panel() {
         $sql = "
             SELECT 
@@ -34,11 +30,30 @@ class InventarioController {
         include __DIR__ . '/../views/inventario_panel.php';
     }
 
-    /**
-     * Corte de caja:
-     * - Resumen general de pedidos y ventas
-     * - Ventas agrupadas por día
-     */
     public function corte() {
         $resumen = $this->pdo->query("
             SELECT 
+                COUNT(*) AS total_pedidos,
+                COALESCE(SUM(total), 0) AS total_ventas
+            FROM pedidos
+        ")->fetch(PDO::FETCH_ASSOC);
+
+        $stmt = $this->pdo->query("
+            SELECT 
+                DATE(fecha_pedido) AS dia,
+                COUNT(*) AS pedidos_dia,
+                COALESCE(SUM(total), 0) AS ventas_dia
+            FROM pedidos
+            GROUP BY DATE(fecha_pedido)
+            ORDER BY dia DESC
+        ");
+        $cortes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $data = [
+            'resumen' => $resumen,
+            'cortes'  => $cortes,
+        ];
+
+        include __DIR__ . '/../views/inventario_corte.php';
+    }
+}
