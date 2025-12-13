@@ -75,7 +75,6 @@ switch ($action) {
         $adminController->productos();
         break;
 
-    // ✅ NUEVAS RUTAS PARA EDITAR / ACTUALIZAR / ELIMINAR PRODUCTOS
     case 'admin-prod-edit':
         $adminController->productoEdit();
         break;
@@ -106,13 +105,30 @@ switch ($action) {
         $repartidorController->confirmarEntrega();
         break;
 
-    /* INVENTARIO */
+    /* INVENTARIO (productos/ventas) */
     case 'inventario':
         $inventarioController->panel();
         break;
 
     case 'inventario-corte':
         $inventarioController->corte();
+        break;
+
+    /* INSUMOS (nuevo módulo) */
+    case 'insumos':
+        $inventarioController->insumos();
+        break;
+
+    case 'insumo-store':
+        $inventarioController->insumoStore();
+        break;
+
+    case 'proveedor-store':
+        $inventarioController->proveedorStore();
+        break;
+
+    case 'movimiento-store':
+        $inventarioController->movimientoStore();
         break;
 
     /* SI FALLA */
